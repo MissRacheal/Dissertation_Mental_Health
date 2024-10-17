@@ -9,25 +9,14 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.chat_models import ChatOpenAI
 from dotenv import load_dotenv, find_dotenv
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-_ = load_dotenv(find_dotenv()) # read local .env file
 
-# TODO :--- Credentials should be stored in a .env file, see if you can manage to get the dotenv file to work, update the README if you do ---
-# Retrieve the environment variables
-# openai_api_key = os.getenv('OPENAI_API_KEY')
-# langchain_tracing_v2 = os.getenv('LANGCHAIN_TRACING_V2')
-# langchain_endpoint = os.getenv('LANGCHAIN_ENDPOINT')
-# langchain_api_key = os.getenv('LANGCHAIN_API_KEY')
-#
-# # Set environment variables
-# os.environ['OPENAI_API_KEY'] = openai_api_key
-# os.environ['LANGCHAIN_TRACING_V2'] = langchain_tracing_v2
-# os.environ['LANGCHAIN_ENDPOINT'] = langchain_endpoint
-# os.environ['LANGCHAIN_API_KEY'] = langchain_api_key
+_ = load_dotenv(find_dotenv())  # read local .env file
 
-os.environ['OPENAI_API_KEY'] = "sk-proj-mZwfrXnSqmOXrmWt5ZOfT3BlbkFJytXcLAwKSBLt2JTfoNjU"
+# Set environment variables (Make sure to replace placeholders with your keys)
+os.environ['OPENAI_API_KEY'] = ""
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_ENDPOINT"] = "https://api.langchain.plus"
-os.environ["LANGCHAIN_API_KEY"] = "lsv2_pt_56f4fc3fb17f4120a7d30cf22c201d50_a6dc18b3f4Y"
+os.environ["LANGCHAIN_API_KEY"] = "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"
 
 sys.path.append('../..')
 
@@ -43,9 +32,18 @@ class MLChatModel:
         """
         Run the model and return the result.
         """
-        # Load the PDF file
-        loader = PyPDFLoader("../mental_health_in_uk.pdf")
-        pages = loader.load()
+        # Load the PDF files
+        loader1 = PyPDFLoader("../mental_health_in_uk.pdf")
+        loader2 = PyPDFLoader("../gender_health_uk_findings.pdf")  
+        loader3 = PyPDFLoader("../ethnicity_data_uk.pdf")
+
+        # Extract text from PDFs
+        pages1 = loader1.load()
+        pages2 = loader2.load()
+        pages3 = loader3.load()
+
+        # Combine the pages from all PDFs
+        all_pages = pages1 + pages2 + pages3
 
         # Directory to persist vector embeddings and data to
         persist_directory = './TEST/'
@@ -55,12 +53,12 @@ class MLChatModel:
 
         # Split documents into chunks and overlap for context
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size = 1500,
-            chunk_overlap = 150
+            chunk_size=1500,
+            chunk_overlap=150
         )
-        splits = text_splitter.split_documents(pages)
+        splits = text_splitter.split_documents(all_pages)
 
-        # Create vector database
+        # Create or update vector database with combined chunks
         vectordb = Chroma.from_documents(
             documents=splits,
             embedding=embedding,
@@ -78,7 +76,7 @@ class MLChatModel:
 
         # Use conversational retrieval chain for interacting with the llm
         qa = ConversationalRetrievalChain.from_llm(
-        llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0),
+            llm=ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0),
             chain_type="stuff",
             retriever=retriever,
             memory=memory
