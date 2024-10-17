@@ -12,8 +12,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 _ = load_dotenv(find_dotenv())  # read local .env file
 
-# Set environment variables (Make sure to replace placeholders with your keys)
-os.environ['OPENAI_API_KEY'] = ""
+# Set environment variables
+os.environ['OPENAI_API_KEY'] = "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"
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_ENDPOINT"] = "https://api.langchain.plus"
 os.environ["LANGCHAIN_API_KEY"] = "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"
